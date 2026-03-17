@@ -1,0 +1,455 @@
+@if (!game || !scenario) {
+<main class="shell">
+  <section class="panel">
+    <p>Loading mission state...</p>
+  </section>
+</main>
+} @else if (!player) {
+<main class="shell">
+  <section class="panel join-panel">
+    @if (noticeText) {
+    <section class="notice-row">
+      <span class="notice error">{{ noticeText }}</span>
+    </section>
+    }
+    <div class="join-hero">
+      <img src="ship.png" alt="Naval Command" class="join-logo" />
+      <div class="join-content">
+        <h2>Silent Wake: Tactical Command</h2>
+        <p class="join-description">
+          A turn-based tactical naval card game. Coordinate with your fellow officers to survive the 10-turn campaign.
+        </p>
+        <div class="join-explanation">
+          Each role has unique capabilities. The Chief Officer (CO) manages the final strategy, while Officers provide
+          the tactical solutions. Communication and timing are critical to success.
+        </div>
+      </div>
+    </div>
+
+    <div class="join-form-header">
+      <h3>Join Session</h3>
+      <p>Choose a role for room {{ game.room.code }}.</p>
+    </div>
+
+    <form class="grid two" (ngSubmit)="join()" #joinForm="ngForm">
+      <input name="playerName" maxlength="40" placeholder="Player name" [(ngModel)]="joinName" required />
+      <select name="playerRole" [(ngModel)]="joinRole">
+        @for (role of validRoles; track role) {
+        <option [value]="role">{{ roleLabels[role] }}</option>
+        }
+      </select>
+      <button type="submit">Join</button>
+    </form>
+  </section>
+</main>
+} @else {
+<main class="shell">
+  @if (!isAdmin()) {
+  <div class="role-corner-badge">{{ roleLabels[player.role] || player.role }}</div>
+  <section class="hero">
+    <div>
+      <div class="turn-banner">{{ game.scenario_meta.title }} • {{ game.game_metadata.phase }}</div>
+      <h1>Silent Wake</h1>
+      <p>{{ game.scenario_meta.description }}</p>
+    </div>
+    @if (game.room.hasStarted) {
+    <div class="pill-row">
+      <span class="pill">Turn {{ game.game_metadata.current_turn }}/{{ totalTurns() }}</span>
+      <span class="pill">Timer {{ fmtSeconds(game.turn_data.timer_remaining) }}</span>
+      @if (player.role === 'co') {
+      <button class="secondary header-info-button" type="button">Played Cards {{ game.turn_data.active_cards.length }}</button>
+      <button class="secondary header-info-button" type="button">Committed {{ selectedCommitIds.length }}</button>
+      }
+    </div>
+    }
+  </section>
+  }
+
+  @if (connectionStatus !== 'online' || noticeText || flashMessage) {
+  <section class="notice-row">
+    @if (connectionStatus !== 'online') {
+    <span class="notice error">Realtime offline</span>
+    }
+    @if (flashMessage) {
+    <span class="notice ok">{{ flashMessage }}</span>
+    }
+    @if (noticeText) {
+    <span class="notice error">{{ noticeText }}</span>
+    }
+  </section>
+  }
+
+  @if (!isAdmin() && game.room.hasStarted && game.game_metadata.phase !== 'game_over') {
+  <section class="panel compact stress-strip">
+    <div class="row-between">
+      <div>
+        <h3>Stress</h3>
+        <!-- <div class="muted">Cold to hot, capped at 10.</div> -->
+      </div>
+      <span class="pill">Level {{ game.game_metadata.stress_level }}/10</span>
+    </div>
+    <div class="stress-scale">
+      <span class="stress-edge">Cold</span>
+      <div class="stress-bar-track">
+        <div class="stress-bar-fill" [style.width.%]="game.game_metadata.stress_level * 10"></div>
+        <div class="stress-bar-markers">
+          @for (level of heatScale(); track level) {
+          <div class="stress-marker"></div>
+          }
+        </div>
+      </div>
+      <span class="stress-edge">Hot</span>
+    </div>
+  </section>
+
+  <section class="system-rail">
+    @for (entry of systemTiles(); track entry.key) {
+    <article class="system-chip panel compact">
+      <div class="system-icon status-{{ entry.value.toLowerCase() }}">{{ entry.icon }}</div>
+      <div class="system-label">{{ entry.label }}</div>
+    </article>
+    }
+  </section>
+  }
+
+  @if (!isAdmin() && game.game_metadata.phase === 'game_over') {
+  <section class="grid two">
+    <section class="panel">
+      <h2>Mission Rating</h2>
+      <p>{{ game.game_metadata.final_rating }}</p>
+      <div class="footer-note">The scoring dashboard is triggered automatically after Turn 10.</div>
+    </section>
+    <section class="panel">
+      <h2>Player Statistics</h2>
+      <div class="history-list">
+        @for (entry of playerStatistics(); track entry.player.id) {
+        <div class="history-item">
+          <strong>{{ entry.player.name }}</strong>
+          <div class="muted">{{ roleLabels[entry.player.role] || entry.player.role }}</div>
+          <div>Correct: {{ entry.correct }}</div>
+          <div>Incorrect: {{ entry.incorrect }}</div>
+        </div>
+        }
+      </div>
+    </section>
+  </section>
+  <section class="grid two">
+    <section class="panel compact">
+      <h3>Turn History</h3>
+      <div class="history-list">
+        @for (entry of reversedHistory(); track entry.turn_index) {
+        <div class="history-item">
+          <div class="row-between">
+            <strong>Turn {{ entry.turn_index }}</strong>
+            <span class="pill">{{ entry.outcome }}</span>
+          </div>
+          <div class="muted">Matched: {{ csv(entry.matched) }}</div>
+          <div class="muted">Missed: {{ csv(entry.missed) }}</div>
+          <div class="muted">Bad: {{ csv(entry.bad_cards) }}</div>
+        </div>
+        }
+      </div>
+    </section>
+    <section class="panel compact">
+      <h3>System Snapshot</h3>
+      <div class="system-rail system-rail-static">
+        @for (entry of systemTiles(); track entry.key) {
+        <article class="system-chip panel compact">
+          <div class="system-icon status-{{ entry.value.toLowerCase() }}">{{ entry.icon }}</div>
+          <div class="system-label">{{ entry.label }}</div>
+        </article>
+        }
+      </div>
+    </section>
+  </section>
+  <section class="panel compact">
+    @if (isAdmin()) {
+    <div class="toolbar">
+      <button (click)="resetRoom()">Start Next Scenario</button>
+      <button class="secondary" (click)="refresh()">Refresh State</button>
+    </div>
+    <form class="toolbar" (ngSubmit)="uploadScenario()">
+      <input type="file" accept=".json,application/json" (change)="onScenarioSelected($event)" />
+      <button type="submit" class="secondary">Upload Scenario</button>
+    </form>
+    <div class="footer-note">Reset the room to return everyone to the waiting room and launch the next run.</div>
+    } @else {
+    <div class="footer-note">Waiting for the Game Admin to reset the room for the next scenario.</div>
+    }
+    <button class="secondary" (click)="clearSession()">Clear Local Session</button>
+  </section>
+  } @else if (!game.room.hasStarted || isAdmin()) {
+  <section class="grid two">
+    <section class="panel">
+      <h2>{{ isAdmin() ? 'Waiting Room' : (game.room.hasStarted ? 'Control Center' : 'Waiting Room') }}</h2>
+      <p>
+        {{ isAdmin() ? 'Players are staged here until the admin starts the 10 second countdown.' : (game.room.hasStarted ? 'Active Mission: ' + game.scenario_meta.title : 'Players are staged here until the admin starts the 10 second countdown.') }}
+      </p>
+      @if (isAdmin() && game.room.hasStarted) {
+        <div class="stat-grid" style="margin: 20px 0;">
+          <div class="stat"><small>Phase</small><strong>{{ game.game_metadata.phase }}</strong></div>
+          <div class="stat"><small>Turn</small><strong>{{ game.game_metadata.current_turn }}/{{ totalTurns() }}</strong></div>
+          <div class="stat"><small>Timer</small><strong>{{ fmtSeconds(game.turn_data.timer_remaining) }}</strong></div>
+          <div class="stat"><small>Score</small><strong>{{ game.game_metadata.mission_score }}</strong></div>
+        </div>
+      }
+      @if (isAdmin()) {
+      <div class="toolbar">
+        <button class="secondary" (click)="resetRoom()">Reset Room</button>
+        <button [disabled]="!canStartCountdown()" (click)="startCountdown()">Start Countdown</button>
+        <button class="secondary" (click)="refresh()">Refresh State</button>
+      </div>
+      <form class="toolbar" style="margin-top: 2rem;" (ngSubmit)="uploadScenario()">
+        <input type="file" accept=".json,application/json" (change)="onScenarioSelected($event)" />
+        <button type="submit" class="secondary">Upload Scenario</button>
+      </form>
+      <div class="footer-note">
+        Scenario:
+        @if (scenarioUploaded()) {
+        <span class="notice ok">✓ scenario loaded</span>
+        } @else {
+        <span class="muted">Upload required before countdown.</span>
+        }
+      </div>
+      @if (!canStartCountdown()) {
+      <div class="footer-note">{{ countdownBlockerMessage() }}</div>
+      }
+      } @else {
+      <p class="muted">Waiting for Game Admin to initiate launch.</p>
+      }
+      @if (game.room.startCountdownEndsAt) {
+      <div class="countdown-timer-circle">
+        <svg viewBox="0 0 36 36">
+          <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <path class="circle" [attr.stroke-dasharray]="(countdownRemaining() * 10) + ', 100'"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        </svg>
+      </div>
+      }
+    </section>
+    <section class="panel">
+      <h2>Roster</h2>
+      <div class="roster-list">
+        @for (entry of game.players; track entry.id) {
+        <div class="roster-item">
+          <div>
+            <strong>{{ entry.name }}</strong>
+            <div class="muted">{{ roleLabels[entry.role] || entry.role }}</div>
+          </div>
+          <span class="pill">{{ entry.connected ? 'online' : 'offline' }}</span>
+        </div>
+        }
+      </div>
+    </section>
+  </section>
+  } @else if (player.role === 'co') {
+  <section class="panel">
+    <h2>Chief Officer Board</h2>
+    <p>{{ currentTurn()?.context || 'Awaiting mission data.' }}</p>
+    <div class="toolbar">
+      <button class="start-turn-button" [class.start-turn-button-pulse]="game.game_metadata.phase === 'briefing'"
+        [disabled]="game.game_metadata.phase !== 'briefing'" (click)="startTurn()">Start Turn</button>
+      <button [disabled]="game.game_metadata.phase !== 'action' || game.turn_data.active_cards.length === 0"
+        (click)="commitTurn()">
+        Commit Final Answer
+      </button>
+    </div>
+    <div class="footer-note">Only the Chief Officer can commit the final answer.</div>
+  </section>
+  <section class="grid">
+    <section class="panel">
+      <h3>Played Cards</h3>
+      <div class="selection-list">
+        @if (game.turn_data.active_cards.length === 0) {
+        <div class="muted">No officers have played a card yet.</div>
+        }
+        @for (entry of activeCardsForCo(); track entry.card_id + '-' + entry.player_id) {
+        <article class="card game-card co-commit-card" [class.co-commit-card-selected]="isCommittedCard(entry.card_id)">
+          <div class="card-shine"></div>
+          <div class="card-topline">
+            <div class="role-label">{{ roleLabels[entry.role] || entry.role }}</div>
+            <div class="pill">{{ entry.player_name }}</div>
+          </div>
+          <div class="card-title-block">
+            <h4>{{ entry.card?.name || entry.card_id }}</h4>
+          </div>
+          <p>{{ entry.card?.desc || 'No card description available.' }}</p>
+          <div class="card-actions">
+            <div class="card-button-row">
+              <button [class.secondary]="isCommittedCard(entry.card_id)" (click)="toggleCommitCard(entry.card_id)">
+                {{ isCommittedCard(entry.card_id) ? 'Committed' : 'Commit Card' }}
+              </button>
+            </div>
+          </div>
+        </article>
+        }
+      </div>
+    </section>
+  </section>
+  } @else {
+  <section class="officer-stack">
+    <section class="panel">
+      <h2>{{ roleLabels[player.role] }}</h2>
+      <p>{{ currentTurn()?.context || 'Awaiting mission data.' }}</p>
+      <div class="armed-board">
+        <div class="row-between">
+          <strong>Armed Cards</strong>
+          <span class="pill">{{ activeSelections().length }}/3 selected</span>
+        </div>
+        <div class="armed-slots">
+          @for (slot of cardSlots(); track slot) {
+          <div class="armed-slot" [class.armed-slot-filled]="slotCard(slot)"
+            [class.armed-slot-drop-target]="canDropIntoSlot(slot)" [attr.data-slot-index]="slot"
+            (dragover)="onSlotDragOver($event, slot)" (drop)="onSlotDrop($event, slot)">
+            @if (slotCard(slot); as armedCard) {
+            <div class="armed-slot-visual armed-slot-visual-filled">
+              <article class="slot-card-object" draggable="true" [attr.data-card-id]="armedCard.id"
+                [attr.data-slot-card-id]="armedCard.id" (dragstart)="onSlotCardDragStart($event, armedCard.id)"
+                (dragend)="onCardDragEnd()">
+                <button class="slot-card-remove" type="button" (click)="removeCard(armedCard.id)"
+                  aria-label="Remove card from slot">×</button>
+                <div class="slot-card-sheen"></div>
+                <div class="role-label">{{ roleLabels[player.role] }}</div>
+                <strong>{{ armedCard.name }}</strong>
+              </article>
+            </div>
+            } @else {
+            <div class="armed-slot-visual" aria-hidden="true"></div>
+            }
+          </div>
+          }
+        </div>
+        <div class="footer-note">Players can arm one, two, or three cards and still hot-swap while the timer is active.
+        </div>
+      </div>
+    </section>
+    <section class="panel hand-panel">
+      <div class="row-between hand-panel-header">
+        <div>
+          <h3>Your Card Hand</h3>
+          <div class="muted">Choose the one, two, or three cards you want to send upward.</div>
+        </div>
+      </div>
+      <div class="cards card-hand" data-hand-dropzone="true" [class.hand-drop-target]="canDropIntoHand()"
+        (dragover)="onHandDropZoneOver($event)" (drop)="onHandDrop($event)">
+        @if (availablePlayerCards().length === 0) {
+        <div class="empty-hand-dropzone">
+          <strong>Hand is full deployed</strong>
+          <div class="muted">Drag a slotted card back here or use the remove icon.</div>
+        </div>
+        }
+        @for (card of availablePlayerCards(); track card.id) {
+        <article class="card game-card" [class.card-dragging]="isLaunchingCard(card.id)" [attr.data-card-id]="card.id"
+          [attr.data-hand-card-id]="card.id" draggable="true" (dragstart)="onHandCardDragStart($event, card.id)"
+          (dragend)="onCardDragEnd()">
+          <div class="card-shine"></div>
+          <div class="card-topline">
+            <div class="role-label">{{ roleLabels[player.role] }}</div>
+          </div>
+          <div class="card-title-block">
+            <h4>{{ card.name }}</h4>
+          </div>
+          <p>{{ card.desc }}</p>
+          <div class="card-actions">
+            <div class="card-button-row">
+              <button [disabled]="!canPlayCard(card.id)"
+                (click)="playCard(card.id, nextAvailableSlotIndex())">Play</button>
+            </div>
+          </div>
+        </article>
+        }
+      </div>
+    </section>
+  </section>
+  }
+</main>
+
+@if (player) {
+<aside class="chat-drawer panel compact" [class.chat-drawer-collapsed]="!chatPanelOpen">
+  <button class="chat-handle" [class.chat-handle-pulse]="chatHandlePulse && !chatPanelOpen" type="button" (click)="toggleChatPanel()">
+    {{ chatPanelOpen ? 'Chat 〉' : '〈 Chat' }}
+  </button>
+  <div class="row-between">
+    <h3>Chat</h3>
+    <span class="muted">{{ chatPanelOpen ? 'Room comms open' : 'Room comms closed' }}</span>
+  </div>
+  @if (chatPanelOpen) {
+  <div class="chat-log">
+    @if (game.chat.length === 0) {
+    <div class="muted">No traffic yet.</div>
+    }
+    @for (message of game.chat; track message.id) {
+    <div class="chat-message">
+      <strong>{{ message.player_name }}</strong>
+      <div class="muted">{{ roleLabels[message.role] || message.role }}</div>
+      <div>{{ message.text }}</div>
+    </div>
+    }
+  </div>
+  <form class="chat-form" (ngSubmit)="sendChat()">
+    <input maxlength="400" [(ngModel)]="chatDraft" name="chatDrawerDraft" placeholder="Send room message" />
+    <button type="submit">Send</button>
+  </form>
+  }
+</aside>
+}
+
+@if (showBriefingOverlay() && currentTurn()) {
+<div class="overlay">
+  <div class="modal-card">
+    <div class="turn-banner">Briefing • Turn {{ currentTurn()!.turn_index }}</div>
+    <h3>{{ currentTurn()!.title }}</h3>
+    <p>{{ currentTurn()!.context }}</p>
+    <div class="countdown-timer-circle">
+      <svg viewBox="0 0 36 36">
+        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        <path class="circle" [attr.stroke-dasharray]="(briefingCountdownRemaining() * 10) + ', 100'"
+          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+      </svg>
+    </div>
+    <div class="footer-note">
+      {{ player.role === 'co' ? 'Chief Officer starts the turn when ready.' : 'Timer remains paused until the Chief
+      Officer starts the turn.' }}
+    </div>
+  </div>
+</div>
+}
+
+@if (showActionCountdownOverlay()) {
+<div class="action-countdown-overlay">
+  <div class="modal-card countdown-card">
+    <div class="turn-banner">Action Window Closing</div>
+    <div class="countdown-timer-circle">
+      <svg viewBox="0 0 36 36">
+        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        <path class="circle" [attr.stroke-dasharray]="(actionCountdownRemaining() * 10) + ', 100'"
+          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+      </svg>
+    </div>
+    <p>Turn auto-resolves at zero, even without officer or Chief Officer responses.</p>
+  </div>
+</div>
+}
+
+@if (!isAdmin() && game.game_metadata.phase === 'transition') {
+<div class="transition-overlay">
+  <div class="modal-card">
+    <div class="turn-banner">Transition</div>
+    <div class="countdown-timer-circle">
+      <svg viewBox="0 0 36 36">
+        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        <path class="circle" [attr.stroke-dasharray]="(game.transition_remaining * 10) + ', 100'"
+          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+      </svg>
+    </div>
+    @if (currentTransitionQuote) {
+    <div class="transition-quote">
+      <p class="transition-quote-text">"{{ currentTransitionQuote.text }}"</p>
+      <div class="transition-quote-attribution">{{ currentTransitionQuote.author }} · {{ currentTransitionQuote.role }}</div>
+    </div>
+    }
+    <p>Next turn in {{ game.transition_remaining }} seconds.</p>
+  </div>
+</div>
+}
+}

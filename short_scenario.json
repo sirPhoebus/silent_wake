@@ -1,0 +1,509 @@
+{
+  "mission_metadata": {
+    "id": "MSN-SW-SHORT-001",
+    "title": "Operation: Narrow Wake",
+    "difficulty": "Medium",
+    "description": "A reduced-command naval wargame through a hostile strait, focused on escort, submarine detection, and timed extraction under pressure.",
+    "global_scoring": {
+      "best_match": 100,
+      "acceptable_match": 50,
+      "bad_match_penalty": -50
+    }
+  },
+  "roles": [
+    "naval_officer",
+    "submarine_officer"
+  ],
+  "turns": [
+    {
+      "turn_index": 1,
+      "title": "Strait Entry",
+      "context": "A tanker convoy enters a mined choke point at dawn. Surface spacing and sonar discipline are critical to avoid early detection.",
+      "resolution": {
+        "best_cards": [
+          "N101",
+          "S101"
+        ],
+        "fail_system": "NAV_RADAR",
+        "fail_status": "ORANGE"
+      },
+      "cards": {
+        "naval_officer": [
+          {
+            "id": "N101",
+            "name": "Close Escort Screen",
+            "desc": "Compress the escort ring to keep the convoy inside overlapping sensors."
+          },
+          {
+            "id": "N102",
+            "name": "High-Speed Transit",
+            "desc": "Push the convoy through the strait before hostile scouts can coordinate."
+          },
+          {
+            "id": "N103",
+            "name": "Wide Formation",
+            "desc": "Increase spacing to reduce the chance of a single mass-casualty hit."
+          }
+        ],
+        "submarine_officer": [
+          {
+            "id": "S101",
+            "name": "Passive Sonar Sweep",
+            "desc": "Maintain silent listening and classify contacts before maneuvering."
+          },
+          {
+            "id": "S102",
+            "name": "Periscope Check",
+            "desc": "Conduct a brief visual mast check near the chokepoint."
+          },
+          {
+            "id": "S103",
+            "name": "Sprint Ahead",
+            "desc": "Move aggressively to scout the exit lane before escorts arrive."
+          }
+        ]
+      }
+    },
+    {
+      "turn_index": 2,
+      "title": "Suspected Mine Line",
+      "context": "A navigation warning suggests a fresh minefield has drifted into the channel. You need slow, deliberate clearance without losing momentum.",
+      "resolution": {
+        "best_cards": [
+          "N104",
+          "S105"
+        ],
+        "fail_system": "NAV_CONSOLE",
+        "fail_status": "ORANGE"
+      },
+      "cards": {
+        "naval_officer": [
+          {
+            "id": "N104",
+            "name": "Mine Avoidance Plot",
+            "desc": "Recompute the convoy route against recent drift and current data."
+          },
+          {
+            "id": "N105",
+            "name": "Hold Course",
+            "desc": "Trust the original pre-briefed lane and minimize indecision."
+          },
+          {
+            "id": "N106",
+            "name": "Emergency Rudder Shift",
+            "desc": "Order a sharp evasive correction on fragmentary reports."
+          }
+        ],
+        "submarine_officer": [
+          {
+            "id": "S104",
+            "name": "Seafloor Shadowing",
+            "desc": "Use bottom contour to bypass suspected mine clusters."
+          },
+          {
+            "id": "S105",
+            "name": "Forward Scan Track",
+            "desc": "Creep ahead of the convoy and mark a safe underwater lane."
+          },
+          {
+            "id": "S106",
+            "name": "Active Ping Burst",
+            "desc": "Use active sonar to force a rapid contact picture."
+          }
+        ]
+      }
+    },
+    {
+      "turn_index": 3,
+      "title": "Unknown Surface Contact",
+      "context": "A fast patrol craft appears on the radar edge without IFF. You need to classify it before it can shadow the convoy.",
+      "resolution": {
+        "best_cards": [
+          "N107",
+          "S108"
+        ],
+        "fail_system": "COMMS",
+        "fail_status": "ORANGE"
+      },
+      "cards": {
+        "naval_officer": [
+          {
+            "id": "N107",
+            "name": "Challenge and Shadow",
+            "desc": "Hail the contact while an escort parallels its movement."
+          },
+          {
+            "id": "N108",
+            "name": "Warn Off with Gun Mounts",
+            "desc": "Train weapons immediately to deter an intercept."
+          },
+          {
+            "id": "N109",
+            "name": "Ignore Outer Ring",
+            "desc": "Keep all escorts close to the convoy and avoid distraction."
+          }
+        ],
+        "submarine_officer": [
+          {
+            "id": "S107",
+            "name": "Trail from Below",
+            "desc": "Move under the contact and track its screw pattern."
+          },
+          {
+            "id": "S108",
+            "name": "Acoustic ID Check",
+            "desc": "Classify the contact type before it reports convoy position."
+          },
+          {
+            "id": "S109",
+            "name": "Set Attack Solution",
+            "desc": "Prepare a firing geometry in case the patrol craft turns hostile."
+          }
+        ]
+      }
+    },
+    {
+      "turn_index": 4,
+      "title": "Thermal Layer Break",
+      "context": "The submarine screen loses clean returns as water temperature shifts sharply. Contact quality is collapsing on both sides of the layer.",
+      "resolution": {
+        "best_cards": [
+          "N112",
+          "S110"
+        ],
+        "fail_system": "NAV_SENSORS",
+        "fail_status": "ORANGE"
+      },
+      "cards": {
+        "naval_officer": [
+          {
+            "id": "N110",
+            "name": "Increase Search Speed",
+            "desc": "Expand the search area before the unknown contact slips away."
+          },
+          {
+            "id": "N111",
+            "name": "Deploy Flares",
+            "desc": "Use visual illumination to compensate for bad sonar geometry."
+          },
+          {
+            "id": "N112",
+            "name": "Layer Compensation Plot",
+            "desc": "Adjust the escort search pattern around the thermal break."
+          }
+        ],
+        "submarine_officer": [
+          {
+            "id": "S110",
+            "name": "Below-Layer Reposition",
+            "desc": "Reset depth beneath the thermal layer to regain contact clarity."
+          },
+          {
+            "id": "S111",
+            "name": "Stay Shallow",
+            "desc": "Hold current depth to maintain rapid convoy support."
+          },
+          {
+            "id": "S112",
+            "name": "Cavitation Burst",
+            "desc": "Accelerate hard through the layer and brute-force to the next station."
+          }
+        ]
+      }
+    },
+    {
+      "turn_index": 5,
+      "title": "Torpedo Warning",
+      "context": "A brief bearing spike suggests an incoming torpedo from the starboard quarter. There is no time for a full solution.",
+      "resolution": {
+        "best_cards": [
+          "N113",
+          "S115"
+        ],
+        "fail_system": "ASUW_TRACKING",
+        "fail_status": "RED"
+      },
+      "cards": {
+        "naval_officer": [
+          {
+            "id": "N113",
+            "name": "Convoy Evasion Turn",
+            "desc": "Order a coordinated evasive maneuver across the convoy column."
+          },
+          {
+            "id": "N114",
+            "name": "Maintain Formation",
+            "desc": "Hold station to avoid secondary collision in confined waters."
+          },
+          {
+            "id": "N115",
+            "name": "Full Ahead",
+            "desc": "Increase speed and attempt to outrun the attack geometry."
+          }
+        ],
+        "submarine_officer": [
+          {
+            "id": "S113",
+            "name": "Counterfire Setup",
+            "desc": "Prepare retaliatory bearings on the suspected launch point."
+          },
+          {
+            "id": "S114",
+            "name": "Decoy Broadcast",
+            "desc": "Emit acoustic deception to draw the weapon off axis."
+          },
+          {
+            "id": "S115",
+            "name": "Torpedo Intercept Track",
+            "desc": "Rapidly mark the incoming bearing and refine the shooter location."
+          }
+        ]
+      }
+    },
+    {
+      "turn_index": 6,
+      "title": "Convoy Scatter Risk",
+      "context": "Two merchant hulls begin drifting off planned intervals after the evasive turn. If cohesion breaks now, the escorts lose control of the fight.",
+      "resolution": {
+        "best_cards": [
+          "N116",
+          "S117"
+        ],
+        "fail_system": "NAV_CONSOLE",
+        "fail_status": "RED"
+      },
+      "cards": {
+        "naval_officer": [
+          {
+            "id": "N116",
+            "name": "Reform Convoy Lanes",
+            "desc": "Reestablish lane order and assign escorts by priority hull."
+          },
+          {
+            "id": "N117",
+            "name": "Release Independent Transit",
+            "desc": "Allow each ship to maneuver separately until the threat passes."
+          },
+          {
+            "id": "N118",
+            "name": "Anchor the Damaged Hull",
+            "desc": "Stop the slowest ship and build the escort plan around it."
+          }
+        ],
+        "submarine_officer": [
+          {
+            "id": "S116",
+            "name": "Outer Screen Patrol",
+            "desc": "Widen the submarine screen to catch the attacker on egress."
+          },
+          {
+            "id": "S117",
+            "name": "Hold Screen Inside Arc",
+            "desc": "Stay tight to the convoy so scattered hulls remain covered."
+          },
+          {
+            "id": "S118",
+            "name": "Independent Hunt",
+            "desc": "Break off from convoy protection to chase the firing submarine."
+          }
+        ]
+      }
+    },
+    {
+      "turn_index": 7,
+      "title": "Decoy Contact",
+      "context": "The contact picture splits into two nearly identical tracks. One is likely a decoy while the real submarine repositions for another shot.",
+      "resolution": {
+        "best_cards": [
+          "N119",
+          "S119"
+        ],
+        "fail_system": "AAW_RADAR",
+        "fail_status": "ORANGE"
+      },
+      "cards": {
+        "naval_officer": [
+          {
+            "id": "N119",
+            "name": "Prioritize Real Contact Logic",
+            "desc": "Filter the tactical picture against speed, turn rate, and bearing history."
+          },
+          {
+            "id": "N120",
+            "name": "Engage Both Bearings",
+            "desc": "Split the surface screen and attack each possible track at once."
+          },
+          {
+            "id": "N121",
+            "name": "Shift to Air Watch",
+            "desc": "Assume the undersea threat is masked and move focus to aerial surveillance."
+          }
+        ],
+        "submarine_officer": [
+          {
+            "id": "S119",
+            "name": "Signature Discrimination",
+            "desc": "Separate decoy harmonics from the genuine propulsion signature."
+          },
+          {
+            "id": "S120",
+            "name": "Deep Chase",
+            "desc": "Commit to the deeper contact as the more probable attacker."
+          },
+          {
+            "id": "S121",
+            "name": "Surface Mast Sweep",
+            "desc": "Use a brief mast exposure to disambiguate the geometry."
+          }
+        ]
+      }
+    },
+    {
+      "turn_index": 8,
+      "title": "Weather Wall",
+      "context": "A squall line closes visibility and raises sea clutter just before the breakout point. Navigation and handoff timing are both deteriorating.",
+      "resolution": {
+        "best_cards": [
+          "N122",
+          "S124"
+        ],
+        "fail_system": "NAV_RADAR",
+        "fail_status": "RED"
+      },
+      "cards": {
+        "naval_officer": [
+          {
+            "id": "N122",
+            "name": "Storm Transit Discipline",
+            "desc": "Reduce speed and tighten reporting cadence through the squall wall."
+          },
+          {
+            "id": "N123",
+            "name": "Dash for Open Water",
+            "desc": "Exploit the weather screen and sprint for the exit marker."
+          },
+          {
+            "id": "N124",
+            "name": "Heave To",
+            "desc": "Pause the convoy until visual and radar quality recover."
+          }
+        ],
+        "submarine_officer": [
+          {
+            "id": "S122",
+            "name": "Ride the Layer",
+            "desc": "Use the storm noise to make a covert flank reposition."
+          },
+          {
+            "id": "S123",
+            "name": "Maintain Station",
+            "desc": "Hold precise escort geometry instead of exploiting cover."
+          },
+          {
+            "id": "S124",
+            "name": "Weather Mask Listening",
+            "desc": "Use storm noise as concealment while preserving acoustic watch."
+          }
+        ]
+      }
+    },
+    {
+      "turn_index": 9,
+      "title": "Exit Ambush",
+      "context": "As the convoy nears the final channel marker, a hostile fast attack craft breaks from coastal clutter. The convoy can still escape if the screen reacts instantly.",
+      "resolution": {
+        "best_cards": [
+          "N127",
+          "S125"
+        ],
+        "fail_system": "ASUW_TRACKING",
+        "fail_status": "RED"
+      },
+      "cards": {
+        "naval_officer": [
+          {
+            "id": "N125",
+            "name": "Protect Lead Tanker",
+            "desc": "Collapse the screen around the convoy flagship."
+          },
+          {
+            "id": "N126",
+            "name": "Break Screen for Pursuit",
+            "desc": "Send the nearest escort to chase the attack craft immediately."
+          },
+          {
+            "id": "N127",
+            "name": "Crossing Fire Pattern",
+            "desc": "Set intersecting escort arcs to deny the attacker a clean run."
+          }
+        ],
+        "submarine_officer": [
+          {
+            "id": "S125",
+            "name": "Attack Craft Track",
+            "desc": "Fix the attacker acoustically and report a stable bearing line."
+          },
+          {
+            "id": "S126",
+            "name": "Prepare Torpedo Shot",
+            "desc": "Shift immediately into weapon posture against the surface raider."
+          },
+          {
+            "id": "S127",
+            "name": "Drop Below Layer",
+            "desc": "Hide from reciprocal detection and preserve the submarine asset."
+          }
+        ]
+      }
+    },
+    {
+      "turn_index": 10,
+      "title": "Breakout",
+      "context": "The convoy reaches the seaward edge of the exclusion zone. A final coordinated move is needed to hand off the merchants and keep the submarine screen from being cut off.",
+      "resolution": {
+        "best_cards": [
+          "N128",
+          "S130"
+        ],
+        "fail_system": "GLOBAL",
+        "fail_status": "RED"
+      },
+      "cards": {
+        "naval_officer": [
+          {
+            "id": "N128",
+            "name": "Escort Handoff Corridor",
+            "desc": "Create a protected lane for the convoy to cross into safe waters."
+          },
+          {
+            "id": "N129",
+            "name": "Last-Ditch Barrage",
+            "desc": "Commit all available weapons to suppress every possible threat axis."
+          },
+          {
+            "id": "N130",
+            "name": "Convoy Scatter Exit",
+            "desc": "Order independent breakout courses to maximize survival odds."
+          }
+        ],
+        "submarine_officer": [
+          {
+            "id": "S128",
+            "name": "Rear Guard Position",
+            "desc": "Stay behind the convoy and cover the withdrawal route."
+          },
+          {
+            "id": "S129",
+            "name": "Silent Withdrawal",
+            "desc": "Disengage immediately to preserve the boat after mission success."
+          },
+          {
+            "id": "S130",
+            "name": "Confirm Clear Exit Lane",
+            "desc": "Verify no hostile submarine remains on the convoy's final bearing."
+          }
+        ]
+      }
+    }
+  ]
+}

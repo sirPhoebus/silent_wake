@@ -1,0 +1,866 @@
+{
+    "mission_metadata": {
+        "id": "MSN-DS-001",
+        "title": "Operation: Silent Wake",
+        "difficulty": "Hard",
+        "description": "Navigate a hostile naval exclusion zone while managing system degradation and escalating tactical pressure.",
+        "global_scoring": {
+            "best_match": 100,
+            "acceptable_match": 50,
+            "bad_match_penalty": -50
+        }
+    },
+    "roles": [
+        "cyber_officer",
+        "air_officer",
+        "naval_officer",
+        "submarine_officer"
+    ],
+    "turns": [
+        {
+            "turn_index": 1,
+            "title": "Ghost in the Static",
+            "context": "Strategic entry into the exclusion zone. Minor sensor ghosts appearing on the AAW Radar. Identify and clear interference.",
+            "resolution": {
+                "best_cards": [
+                    "C1",
+                    "A2",
+                    "N3"
+                ],
+                "fail_system": "AAW_RADAR",
+                "fail_status": "ORANGE"
+            },
+            "cards": {
+                "cyber_officer": [
+                    {
+                        "id": "C1",
+                        "name": "Frequency Hopping",
+                        "desc": "Rapidly cycle comms frequencies to bypass localized jamming."
+                    },
+                    {
+                        "id": "C2",
+                        "name": "Firewall Reset",
+                        "desc": "Hard-reboot the perimeter defense layers."
+                    },
+                    {
+                        "id": "C3",
+                        "name": "Data Log Audit",
+                        "desc": "Analyze packet headers for signs of spoofing."
+                    }
+                ],
+                "air_officer": [
+                    {
+                        "id": "A1",
+                        "name": "CAP Launch",
+                        "desc": "Deploy Combat Air Patrol to maintain visual range."
+                    },
+                    {
+                        "id": "A2",
+                        "name": "Passive Scan",
+                        "desc": "Search for heat signatures without emitting radar pulses."
+                    },
+                    {
+                        "id": "A3",
+                        "name": "Signal Flare",
+                        "desc": "Launch magnesium flares for visual signaling."
+                    }
+                ],
+                "naval_officer": [
+                    {
+                        "id": "N1",
+                        "name": "Standard Route",
+                        "desc": "Maintain current heading and speed."
+                    },
+                    {
+                        "id": "N2",
+                        "name": "Increase Speed",
+                        "desc": "Push engines to 20 knots to clear the sector."
+                    },
+                    {
+                        "id": "N3",
+                        "name": "Formation Delta",
+                        "desc": "Tighten fleet perimeter for overlapping radar cover."
+                    }
+                ],
+                "submarine_officer": [
+                    {
+                        "id": "S1",
+                        "name": "Shallow Dive",
+                        "desc": "Submerge to 50 meters to avoid visual detection."
+                    },
+                    {
+                        "id": "S2",
+                        "name": "Towed Array Deploy",
+                        "desc": "Unspool sonar cable for long-range listening."
+                    },
+                    {
+                        "id": "S3",
+                        "name": "Active Ping",
+                        "desc": "Emit high-energy sonar pulse to map surroundings."
+                    }
+                ]
+            }
+        },
+        {
+            "turn_index": 2,
+            "title": "The Approaching Storm",
+            "context": "Weather degrading. NAV_SENSORS showing 15% deviation. Stability is priority.",
+            "resolution": {
+                "best_cards": [
+                    "C4",
+                    "N5",
+                    "S4"
+                ],
+                "fail_system": "NAV_SENSORS",
+                "fail_status": "ORANGE"
+            },
+            "cards": {
+                "cyber_officer": [
+                    {
+                        "id": "C4",
+                        "name": "Weather Filter",
+                        "desc": "Apply digital noise reduction to sensor feeds."
+                    },
+                    {
+                        "id": "C5",
+                        "name": "Signal Boost",
+                        "desc": "Increase gain on long-range antenna arrays."
+                    },
+                    {
+                        "id": "C6",
+                        "name": "System Bypass",
+                        "desc": "Reroute power around damaged relay nodes."
+                    }
+                ],
+                "air_officer": [
+                    {
+                        "id": "A4",
+                        "name": "Low Altitude Flight",
+                        "desc": "Fly below the cloud deck for better visibility."
+                    },
+                    {
+                        "id": "A5",
+                        "name": "RTB",
+                        "desc": "Return to Base for safety during peak storm."
+                    },
+                    {
+                        "id": "A6",
+                        "name": "Search Pattern B",
+                        "desc": "Systematic grid search of the immediate area."
+                    }
+                ],
+                "naval_officer": [
+                    {
+                        "id": "N4",
+                        "name": "Heavy Sea Maneuver",
+                        "desc": "Adjust heading to take waves at 45 degrees."
+                    },
+                    {
+                        "id": "N5",
+                        "name": "Stabilizers On",
+                        "desc": "Deploy hydraulic fins to reduce ship roll."
+                    },
+                    {
+                        "id": "N6",
+                        "name": "Full Stop",
+                        "desc": "Kill engines to avoid collision in zero visibility."
+                    }
+                ],
+                "submarine_officer": [
+                    {
+                        "id": "S4",
+                        "name": "Below Thermocline",
+                        "desc": "Dive deep to hide under temperature layers."
+                    },
+                    {
+                        "id": "S5",
+                        "name": "Snorkel Depth",
+                        "desc": "Maintain shallow depth for engine ventilation."
+                    },
+                    {
+                        "id": "S6",
+                        "name": "Silent Running",
+                        "desc": "Switch to battery power to reduce acoustic trace."
+                    }
+                ]
+            }
+        },
+        {
+            "turn_index": 3,
+            "title": "Unidentified Contact",
+            "context": "A surface contact refuses to ID on COMMS. Threat level: High.",
+            "resolution": {
+                "best_cards": [
+                    "C9",
+                    "A8",
+                    "N7"
+                ],
+                "fail_system": "COMMS",
+                "fail_status": "RED"
+            },
+            "cards": {
+                "cyber_officer": [
+                    {
+                        "id": "C7",
+                        "name": "Decrypt Hail",
+                        "desc": "Brute-force the non-standard signal encryption."
+                    },
+                    {
+                        "id": "C8",
+                        "name": "Jamming Pulse",
+                        "desc": "Blanket the target in high-frequency noise."
+                    },
+                    {
+                        "id": "C9",
+                        "name": "Trace Origin",
+                        "desc": "Triangulate the target's broadcast location."
+                    }
+                ],
+                "air_officer": [
+                    {
+                        "id": "A7",
+                        "name": "Warning Shot",
+                        "desc": "Fire 20mm cannons across the target's bow."
+                    },
+                    {
+                        "id": "A8",
+                        "name": "Visual ID Flyby",
+                        "desc": "Low-altitude pass to confirm target markings."
+                    },
+                    {
+                        "id": "A9",
+                        "name": "Drop Sonobuoy",
+                        "desc": "Deploy acoustic sensor near the target."
+                    }
+                ],
+                "naval_officer": [
+                    {
+                        "id": "N7",
+                        "name": "Hail on 16",
+                        "desc": "Transmit challenge on international frequency."
+                    },
+                    {
+                        "id": "N8",
+                        "name": "Ready Deck Gun",
+                        "desc": "Train the 5-inch gun on the target."
+                    },
+                    {
+                        "id": "N9",
+                        "name": "Shield HVU",
+                        "desc": "Position ship between target and High Value Unit."
+                    }
+                ],
+                "submarine_officer": [
+                    {
+                        "id": "S7",
+                        "name": "Shadow Contact",
+                        "desc": "Follow target within its acoustic blind spot."
+                    },
+                    {
+                        "id": "S8",
+                        "name": "ID Check",
+                        "desc": "Cross-reference acoustic signature with database."
+                    },
+                    {
+                        "id": "S9",
+                        "name": "Torpedo Preset",
+                        "desc": "Flood tubes and set depth for engagement."
+                    }
+                ]
+            }
+        },
+        {
+            "turn_index": 4,
+            "title": "The Breach",
+            "context": "NAV_CONSOLE flickering. Possible malware injection.",
+            "resolution": {
+                "best_cards": [
+                    "C10",
+                    "A12",
+                    "N10"
+                ],
+                "fail_system": "NAV_CONSOLE",
+                "fail_status": "RED"
+            },
+            "cards": {
+                "cyber_officer": [
+                    {
+                        "id": "C10",
+                        "name": "Sandbox Isolation",
+                        "desc": "Quarantine suspected malware to virtual nodes."
+                    },
+                    {
+                        "id": "C11",
+                        "name": "Purge Buffers",
+                        "desc": "Clear volatile memory to remove resident threats."
+                    },
+                    {
+                        "id": "C12",
+                        "name": "Hardened Logic",
+                        "desc": "Lock down kernel access to critical systems."
+                    }
+                ],
+                "air_officer": [
+                    {
+                        "id": "A10",
+                        "name": "Relay Comms",
+                        "desc": "Act as a satellite link for the fleet."
+                    },
+                    {
+                        "id": "A11",
+                        "name": "Guard Frequency",
+                        "desc": "Monitor distress bands for SOS signals."
+                    },
+                    {
+                        "id": "A12",
+                        "name": "Electronic Escort",
+                        "desc": "Provide ECM cover for shipborne sensors."
+                    }
+                ],
+                "naval_officer": [
+                    {
+                        "id": "N10",
+                        "name": "Manual Navigation",
+                        "desc": "Steer using direct mechanical linkages."
+                    },
+                    {
+                        "id": "N11",
+                        "name": "Optical Bearings",
+                        "desc": "Use the bridge bridge telescope for positioning."
+                    },
+                    {
+                        "id": "N12",
+                        "name": "Emergency Turn",
+                        "desc": "Hard rudder to port to avoid phantom obstacle."
+                    }
+                ],
+                "submarine_officer": [
+                    {
+                        "id": "S10",
+                        "name": "Cut External Links",
+                        "desc": "Sever data tethers to prevent cross-infection."
+                    },
+                    {
+                        "id": "S11",
+                        "name": "Internal Diagnostic",
+                        "desc": "Run full integrity scan on sonar computers."
+                    },
+                    {
+                        "id": "S12",
+                        "name": "Surface Comms",
+                        "desc": "Rise to deploy antenna for external clean-boot."
+                    }
+                ]
+            }
+        },
+        {
+            "turn_index": 5,
+            "title": "Ambush Point",
+            "context": "Incoming signatures. ASUW_TRACKING overloaded.",
+            "resolution": {
+                "best_cards": [
+                    "C13",
+                    "A13",
+                    "N15",
+                    "S13"
+                ],
+                "fail_system": "ASUW_TRACKING",
+                "fail_status": "RED"
+            },
+            "cards": {
+                "cyber_officer": [
+                    {
+                        "id": "C13",
+                        "name": "Decoy Signals",
+                        "desc": "Generate phantom radar returns."
+                    },
+                    {
+                        "id": "C14",
+                        "name": "Logic Bomb",
+                        "desc": "Infect incoming missile guidance via radio."
+                    },
+                    {
+                        "id": "C15",
+                        "name": "Sensor Fusion",
+                        "desc": "Combine all feeds into one tactical map."
+                    }
+                ],
+                "air_officer": [
+                    {
+                        "id": "A13",
+                        "name": "Scramble Interceptors",
+                        "desc": "Immediate launch for fleet defense."
+                    },
+                    {
+                        "id": "A14",
+                        "name": "Chaff Cloud",
+                        "desc": "Deploy aluminum strips to confuse radar."
+                    },
+                    {
+                        "id": "A15",
+                        "name": "Counter-Exocet",
+                        "desc": "AAM engagement of incoming missiles."
+                    }
+                ],
+                "naval_officer": [
+                    {
+                        "id": "N13",
+                        "name": "Zig-Zag",
+                        "desc": "Unpredictable course changes to evade fire."
+                    },
+                    {
+                        "id": "N14",
+                        "name": "Flank Speed",
+                        "desc": "Maximum turbine output (30+ knots)."
+                    },
+                    {
+                        "id": "N15",
+                        "name": "Engage Targets",
+                        "desc": "Fire deck guns at surface threats."
+                    }
+                ],
+                "submarine_officer": [
+                    {
+                        "id": "S13",
+                        "name": "Launch Decoys",
+                        "desc": "Eject acoustic noisemakers to lure torpedoes."
+                    },
+                    {
+                        "id": "S14",
+                        "name": "Emergency Deep",
+                        "desc": "Maximum dive rate to escape blast radius."
+                    },
+                    {
+                        "id": "S15",
+                        "name": "Counter-Slam",
+                        "desc": "Launch sub-surface to air missile."
+                    }
+                ]
+            }
+        },
+        {
+            "turn_index": 6,
+            "title": "Structural Fatigue",
+            "context": "Sustained combat. AAW_RADAR is overheating.",
+            "resolution": {
+                "best_cards": [
+                    "C16",
+                    "N16",
+                    "S18"
+                ],
+                "fail_system": "AAW_RADAR",
+                "fail_status": "RED"
+            },
+            "cards": {
+                "cyber_officer": [
+                    {
+                        "id": "C16",
+                        "name": "Coolant Redirect",
+                        "desc": "Priority cooling to server racks."
+                    },
+                    {
+                        "id": "C17",
+                        "name": "Power Cycle",
+                        "desc": "Brief shutdown to prevent hardware melt."
+                    },
+                    {
+                        "id": "C18",
+                        "name": "Redundant Path",
+                        "desc": "Switch processing to auxiliary CPU."
+                    }
+                ],
+                "air_officer": [
+                    {
+                        "id": "A16",
+                        "name": "Orbiting High",
+                        "desc": "Conserve fuel at 30,000 feet."
+                    },
+                    {
+                        "id": "A17",
+                        "name": "Glide Descent",
+                        "desc": "Engines to idle to reduce heat signature."
+                    },
+                    {
+                        "id": "A18",
+                        "name": "Refuel Mid-air",
+                        "desc": "Extend flight time via tanker support."
+                    }
+                ],
+                "naval_officer": [
+                    {
+                        "id": "N16",
+                        "name": "Damage Control",
+                        "desc": "Repair crews deployed to radar deck."
+                    },
+                    {
+                        "id": "N17",
+                        "name": "Fire Suppress",
+                        "desc": "Activate Halon gas in electronics bay."
+                    },
+                    {
+                        "id": "N18",
+                        "name": "Shore Bulkhead",
+                        "desc": "Reinforce hull plates after stress fractures."
+                    }
+                ],
+                "submarine_officer": [
+                    {
+                        "id": "S16",
+                        "name": "Level Trim",
+                        "desc": "Adjust ballast for perfectly level hover."
+                    },
+                    {
+                        "id": "S17",
+                        "name": "Ballast Vent",
+                        "desc": "Flush tanks to change buoyancy profile."
+                    },
+                    {
+                        "id": "S18",
+                        "name": "Pressure Check",
+                        "desc": "Monitor hull for micro-fractures."
+                    }
+                ]
+            }
+        },
+        {
+            "turn_index": 7,
+            "title": "The Silent Hunter",
+            "context": "Sub-surface ping detected. SENSORS at Red.",
+            "resolution": {
+                "best_cards": [
+                    "C19",
+                    "A19",
+                    "N21",
+                    "S21"
+                ],
+                "fail_system": "NAV_SENSORS",
+                "fail_status": "RED"
+            },
+            "cards": {
+                "cyber_officer": [
+                    {
+                        "id": "C19",
+                        "name": "Acoustic Analysis",
+                        "desc": "Isolate engine noise from biologicals."
+                    },
+                    {
+                        "id": "C20",
+                        "name": "Filter Cavitation",
+                        "desc": "Remove propeller bubble noise from feed."
+                    },
+                    {
+                        "id": "C21",
+                        "name": "Pattern Match",
+                        "desc": "Identify sub class via sound signature."
+                    }
+                ],
+                "air_officer": [
+                    {
+                        "id": "A19",
+                        "name": "Dipping Sonar",
+                        "desc": "Helicopter-based sub-surface search."
+                    },
+                    {
+                        "id": "A20",
+                        "name": "Depth Charge",
+                        "desc": "Deploy anti-sub explosives."
+                    },
+                    {
+                        "id": "A21",
+                        "name": "MAD Scan",
+                        "desc": "Search for metal hull magnetic anomalies."
+                    }
+                ],
+                "naval_officer": [
+                    {
+                        "id": "N19",
+                        "name": "ASW Maneuver",
+                        "desc": "Perform 'Sprint and Drift' search."
+                    },
+                    {
+                        "id": "N20",
+                        "name": "Active Ping",
+                        "desc": "Force target to reveal position."
+                    },
+                    {
+                        "id": "N21",
+                        "name": "Engine Silence",
+                        "desc": "Kill all machinery to listen better."
+                    }
+                ],
+                "submarine_officer": [
+                    {
+                        "id": "S19",
+                        "name": "Bottoming",
+                        "desc": "Rest on the seafloor to remain invisible."
+                    },
+                    {
+                        "id": "S20",
+                        "name": "Cold Pipe Flow",
+                        "desc": "Reduce thermal output of the reactor."
+                    },
+                    {
+                        "id": "S21",
+                        "name": "Stealth Mode",
+                        "desc": "Deploy acoustic masking coating."
+                    }
+                ]
+            }
+        },
+        {
+            "turn_index": 8,
+            "title": "Dead Reckoning",
+            "context": "GPS Lost. NAV systems in ORANGE.",
+            "resolution": {
+                "best_cards": [
+                    "C23",
+                    "A24",
+                    "N22",
+                    "S22"
+                ],
+                "fail_system": "NAV_CONSOLE",
+                "fail_status": "RED"
+            },
+            "cards": {
+                "cyber_officer": [
+                    {
+                        "id": "C22",
+                        "name": "Satellite Re-link",
+                        "desc": "Search for alternative comms birds."
+                    },
+                    {
+                        "id": "C23",
+                        "name": "Inertial Sync",
+                        "desc": "Calibrate position via gyros."
+                    },
+                    {
+                        "id": "C24",
+                        "name": "Clock Correction",
+                        "desc": "Fix time-drift in local servers."
+                    }
+                ],
+                "air_officer": [
+                    {
+                        "id": "A22",
+                        "name": "Horizon Sight",
+                        "desc": "Fly high to find landmarks visually."
+                    },
+                    {
+                        "id": "A23",
+                        "name": "Star Nav",
+                        "desc": "Use celestial bodies for course fixing."
+                    },
+                    {
+                        "id": "A24",
+                        "name": "Guide Ship",
+                        "desc": "Airborne eyes for the bridge team."
+                    }
+                ],
+                "naval_officer": [
+                    {
+                        "id": "N22",
+                        "name": "Sextant Use",
+                        "desc": "Manual star-sights for navigation."
+                    },
+                    {
+                        "id": "N23",
+                        "name": "Dead Reckon",
+                        "desc": "Calculate position via speed and time."
+                    },
+                    {
+                        "id": "N24",
+                        "name": "Anchor Watch",
+                        "desc": "Monitor drift in shallow waters."
+                    }
+                ],
+                "submarine_officer": [
+                    {
+                        "id": "S22",
+                        "name": "Bathymetric Map",
+                        "desc": "Navigate via seafloor topography."
+                    },
+                    {
+                        "id": "S23",
+                        "name": "Current Drift",
+                        "desc": "Adjust for underwater water flow."
+                    },
+                    {
+                        "id": "S24",
+                        "name": "Periscope Rise",
+                        "desc": "Visual confirmation of surface shore."
+                    }
+                ]
+            }
+        },
+        {
+            "turn_index": 9,
+            "title": "Total Blackout",
+            "context": "COMMS Down. Fleet coordination failing.",
+            "resolution": {
+                "best_cards": [
+                    "C26",
+                    "A26",
+                    "N26",
+                    "S25"
+                ],
+                "fail_system": "COMMS",
+                "fail_status": "RED"
+            },
+            "cards": {
+                "cyber_officer": [
+                    {
+                        "id": "C25",
+                        "name": "Emergency Protocol",
+                        "desc": "Execute pre-programmed fallback orders."
+                    },
+                    {
+                        "id": "C26",
+                        "name": "Mesh Network",
+                        "desc": "P2P data sharing between nearby hulls."
+                    },
+                    {
+                        "id": "C27",
+                        "name": "Burner Channel",
+                        "desc": "Use unprotected, high-gain radio frequency."
+                    }
+                ],
+                "air_officer": [
+                    {
+                        "id": "A25",
+                        "name": "Hand Signals",
+                        "desc": "Communicate between cockpits visually."
+                    },
+                    {
+                        "id": "A26",
+                        "name": "Flare Pattern",
+                        "desc": "Coded signals using colored flares."
+                    },
+                    {
+                        "id": "A27",
+                        "name": "Wing Dip",
+                        "desc": "Simple 'Follow Me' aerial maneuver."
+                    }
+                ],
+                "naval_officer": [
+                    {
+                        "id": "N25",
+                        "name": "Aldis Lamp",
+                        "desc": "High-intensity flashing light signals."
+                    },
+                    {
+                        "id": "N26",
+                        "name": "Flag Hoist",
+                        "desc": "Raise physical signal flags."
+                    },
+                    {
+                        "id": "N27",
+                        "name": "Megaphone",
+                        "desc": "Acoustic shouting to nearby ships."
+                    }
+                ],
+                "submarine_officer": [
+                    {
+                        "id": "S25",
+                        "name": "U-Telephone",
+                        "desc": "Acoustic voice pulses through water."
+                    },
+                    {
+                        "id": "S26",
+                        "name": "Release Buoy",
+                        "desc": "Float a radio beacon to the surface."
+                    },
+                    {
+                        "id": "S27",
+                        "name": "Timed Rise",
+                        "desc": "Surface at exactly 12:00 for orders."
+                    }
+                ]
+            }
+        },
+        {
+            "turn_index": 10,
+            "title": "The Extraction",
+            "context": "Tide window closing. Final dash to exit.",
+            "resolution": {
+                "best_cards": [
+                    "C28",
+                    "A29",
+                    "N28",
+                    "S30"
+                ],
+                "fail_system": "GLOBAL",
+                "fail_status": "RED"
+            },
+            "cards": {
+                "cyber_officer": [
+                    {
+                        "id": "C28",
+                        "name": "Overclock CPU",
+                        "desc": "Max processing for final extraction."
+                    },
+                    {
+                        "id": "C29",
+                        "name": "Final Encrypt",
+                        "desc": "Seal all data for transport."
+                    },
+                    {
+                        "id": "C30",
+                        "name": "Delete Logs",
+                        "desc": "Wipe all evidence of presence."
+                    }
+                ],
+                "air_officer": [
+                    {
+                        "id": "A28",
+                        "name": "Full Burn",
+                        "desc": "Maximum afterburner speed."
+                    },
+                    {
+                        "id": "A29",
+                        "name": "Cover Retreat",
+                        "desc": "Mask the fleet's acoustic exit."
+                    },
+                    {
+                        "id": "A30",
+                        "name": "Last Man Out",
+                        "desc": "Final sensor sweep before RTB."
+                    }
+                ],
+                "naval_officer": [
+                    {
+                        "id": "N28",
+                        "name": "Max Revolutions",
+                        "desc": "Turbines to the redline."
+                    },
+                    {
+                        "id": "N29",
+                        "name": "Tight Turn",
+                        "desc": "High-speed course change."
+                    },
+                    {
+                        "id": "N30",
+                        "name": "All Guns Free",
+                        "desc": "Suppressive fire in all directions."
+                    }
+                ],
+                "submarine_officer": [
+                    {
+                        "id": "S28",
+                        "name": "Cavitate to Surface",
+                        "desc": "Speed over silence to reach top."
+                    },
+                    {
+                        "id": "S29",
+                        "name": "Blow Ballast",
+                        "desc": "Emergency rise using all air."
+                    },
+                    {
+                        "id": "S30",
+                        "name": "Speed Run",
+                        "desc": "Full battery drain for 40 knots."
+                    }
+                ]
+            }
+        }
+    ]
+}
