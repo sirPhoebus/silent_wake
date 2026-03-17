@@ -117,6 +117,41 @@ type TransitionQuote = {
   role: string;
 };
 
+type TurnHistoryEntry = GameState["turn_history"][number];
+
+type AdminGameRunSummary = {
+  run_id: string;
+  room_code: string;
+  scenario_title: string;
+  phase: string;
+  mission: string;
+  mission_score: number;
+  started_at: string | null;
+  finished_at: string | null;
+  updated_at: string | null;
+};
+
+type AdminGameRunDetail = AdminGameRunSummary & {
+  current_turn: number;
+  stress_level: number;
+  tide_window_minutes: number;
+  systems: Record<string, string>;
+  summary: {
+    room?: {
+      code?: string;
+    };
+    game_metadata?: {
+      phase?: string;
+      mission_score?: number;
+      final_rating?: string | null;
+    };
+    turn_data?: {
+      timer_remaining?: number;
+    };
+  };
+  turn_history: TurnHistoryEntry[];
+};
+
 @Component({
   selector: "app-root",
   standalone: true,
@@ -212,6 +247,9 @@ export class AppComponent implements OnInit, OnDestroy {
   protected chatPanelOpen = false;
   protected currentTransitionQuote: TransitionQuote | null = null;
   protected chatHandlePulse = false;
+  protected selectedTurnHistoryEntry: TurnHistoryEntry | null = null;
+  protected adminGameRuns: AdminGameRunSummary[] = [];
+  protected selectedAdminGameRun: AdminGameRunDetail | null = null;
   protected draggedHandCardId: string | null = null;
   protected draggedSlotCardId: string | null = null;
 
@@ -270,6 +308,39 @@ export class AppComponent implements OnInit, OnDestroy {
     return `${mins}:${secs}`;
   }
 
+  protected fmtDateTime(value: string | null): string {
+    if (!value) {
+      return "—";
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+    return date.toLocaleString();
+  }
+
+  protected fmtDate(value: string | null): string {
+    if (!value) {
+      return "—";
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+    return date.toLocaleDateString();
+  }
+
+  protected fmtTime(value: string | null): string {
+    if (!value) {
+      return "—";
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+    return date.toLocaleTimeString();
+  }
+
   protected csv(values: string[]): string {
     return values.length ? values.join(", ") : "none";
   }
@@ -303,6 +374,40 @@ export class AppComponent implements OnInit, OnDestroy {
 
   protected reversedHistory() {
     return [...(this.game?.turn_history || [])].reverse();
+  }
+
+  protected openTurnHistoryDetail(entry: TurnHistoryEntry): void {
+    this.selectedTurnHistoryEntry = entry;
+    this.renderNow();
+  }
+
+  protected closeTurnHistoryDetail(): void {
+    this.selectedTurnHistoryEntry = null;
+    this.renderNow();
+  }
+
+  protected async openAdminGameRun(runId: string): Promise<void> {
+    await this.run(async () => {
+      const response = await this.api<{ ok: true; run: AdminGameRunDetail }>(`/api/v1/admin/game_runs/${runId}`);
+      this.selectedAdminGameRun = response.run;
+      this.renderNow();
+    });
+  }
+
+  protected async deleteAdminGameRun(runId: string): Promise<void> {
+    await this.run(async () => {
+      await this.api(`/api/v1/admin/game_runs/${runId}`, { method: "DELETE" });
+      if (this.selectedAdminGameRun?.run_id === runId) {
+        this.selectedAdminGameRun = null;
+      }
+      await this.refreshAdminGameRuns();
+      this.flash("Game deleted.");
+    });
+  }
+
+  protected closeAdminGameRun(): void {
+    this.selectedAdminGameRun = null;
+    this.renderNow();
   }
 
   protected isAdmin(): boolean {
@@ -483,6 +588,35 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 
+  protected turnHistoryPlayedCards(entry: TurnHistoryEntry): Array<{ playerName: string; cardName: string; role: string }> {
+    const turn = this.scenario?.turns.find((candidate) => candidate.turn_index === entry.turn_index);
+    if (!turn) {
+      return [];
+    }
+
+    return entry.summary.played_cards.map((played) => {
+      const player = (this.game?.players || []).find((candidate) => candidate.id === played.player_id);
+      let cardName = played.card_id;
+      for (const cards of Object.values(turn.cards)) {
+        const matchedCard = cards.find((candidate) => candidate.id === played.card_id);
+        if (matchedCard) {
+          cardName = matchedCard.name;
+          break;
+        }
+      }
+
+      return {
+        playerName: player?.name || `Player ${played.player_id}`,
+        cardName,
+        role: this.roleLabels[player?.role || ""] || player?.role || "Unknown Role",
+      };
+    });
+  }
+
+  protected adminRunTurnHistory(run: AdminGameRunDetail | null): TurnHistoryEntry[] {
+    return [...(run?.turn_history || [])].reverse();
+  }
+
   protected isCommittedCard(cardId: string): boolean {
     return this.selectedCommitIds.includes(cardId);
   }
@@ -545,6 +679,9 @@ export class AppComponent implements OnInit, OnDestroy {
         token: data.session_token,
       };
       this.saveSession();
+      if (data.player.role === "admin") {
+        await this.refreshAdminGameRuns();
+      }
       this.connectSocket();
       this.flash(`Joined as ${this.roleLabels[data.player.role]}.`);
     } catch (error) {
@@ -572,7 +709,7 @@ export class AppComponent implements OnInit, OnDestroy {
         throw new Error(this.countdownBlockerMessage());
       }
       await this.api("/api/v1/start_game_countdown", { method: "POST" });
-      this.flash("Countdown started.");
+      this.flash("Briefing started.");
     });
   }
 
@@ -732,6 +869,8 @@ export class AppComponent implements OnInit, OnDestroy {
     localStorage.removeItem("silent-wake-session");
     this.disconnectSocket();
     this.selectedCommitIds = [];
+    this.adminGameRuns = [];
+    this.selectedAdminGameRun = null;
     this.zone.run(() => {
       this.noticeText = "";
       this.flashMessage = "";
@@ -778,6 +917,9 @@ export class AppComponent implements OnInit, OnDestroy {
         token: this.session.token,
       };
       this.saveSession();
+      if (data.player.role === "admin") {
+        await this.refreshAdminGameRuns();
+      }
     } catch {
       this.clearSession();
     }
@@ -821,6 +963,12 @@ export class AppComponent implements OnInit, OnDestroy {
         this.syncChatHandlePulse(this.game, payload);
         this.syncTransitionQuote(payload);
         this.game = payload;
+        if (
+          this.player?.role === "admin" &&
+          ["waiting_room", "briefing", "game_over"].includes(payload.game_metadata.phase)
+        ) {
+          await this.refreshAdminGameRuns();
+        }
         for (const activeCard of payload.turn_data.active_cards) {
           this.launchingCardIds.delete(activeCard.card_id);
         }
@@ -894,6 +1042,17 @@ export class AppComponent implements OnInit, OnDestroy {
     this.syncChatHandlePulse(this.game, nextGame);
     this.syncTransitionQuote(nextGame);
     this.game = nextGame;
+    if (this.player?.role === "admin") {
+      await this.refreshAdminGameRuns();
+    }
+  }
+
+  private async refreshAdminGameRuns(): Promise<void> {
+    if (this.player?.role !== "admin" || !this.session?.token) {
+      return;
+    }
+    const response = await this.api<{ ok: true; runs: AdminGameRunSummary[] }>("/api/v1/admin/game_runs");
+    this.adminGameRuns = response.runs;
   }
 
   private async api<T>(path: string, options: { method?: string; body?: FormData | object } = {}): Promise<T> {

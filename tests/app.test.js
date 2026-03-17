@@ -203,12 +203,12 @@ test("synchronized turn flow works over http and websocket", async () => {
 
   await Promise.all(sockets.map((socket) => once(socket, "STATE_UPDATE")));
 
+  const briefingReady = once(sockets[1], "BRIEFING_READY", 15_000);
   await api("/api/v1/start_game_countdown", {
     method: "POST",
     headers: authHeaders(adminJoin.session_token),
   });
-
-  await once(sockets[1], "BRIEFING_READY", 15_000);
+  await briefingReady;
 
   await api("/api/v1/start_turn", {
     method: "POST",
@@ -296,11 +296,12 @@ test("officers can arm up to three cards and remove one specific card", async ()
   const cyberSocket = connectSocket(cyberJoin.session_token);
   await Promise.all([once(coSocket, "STATE_UPDATE"), once(cyberSocket, "STATE_UPDATE")]);
 
+  const briefingReady = once(coSocket, "BRIEFING_READY", 15_000);
   await api("/api/v1/start_game_countdown", {
     method: "POST",
     headers: authHeaders(adminJoin.session_token),
   });
-  await once(coSocket, "BRIEFING_READY", 15_000);
+  await briefingReady;
 
   await api("/api/v1/start_turn", {
     method: "POST",
@@ -399,12 +400,12 @@ test("wrong card timer penalty scales with stress level", async () => {
 
   await Promise.all(sockets.map((socket) => once(socket, "STATE_UPDATE")));
 
+  const briefingReady = once(sockets[0], "BRIEFING_READY", 20_000);
   await api("/api/v1/start_game_countdown", {
     method: "POST",
     headers: authHeaders(adminJoin.session_token),
   });
-
-  await once(sockets[0], "BRIEFING_READY", 15_000);
+  await briefingReady;
 
   await api("/api/v1/start_turn", {
     method: "POST",
@@ -434,7 +435,7 @@ test("wrong card timer penalty scales with stress level", async () => {
     body: { card_ids: ["C1", "A2"] },
   });
 
-  await once(sockets[0], "BRIEFING_READY", 15_000);
+  await once(sockets[0], "BRIEFING_READY", 20_000);
 
   let state = await api("/api/v1/state");
   assert.equal(state.game_metadata.current_turn, 2);

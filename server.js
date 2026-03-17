@@ -344,6 +344,7 @@ let transitionInterval = null;
 let countdownTimeout = null;
 let nextPlayerId = 1;
 let runtimeSaveTimeout = null;
+const hiddenDeletedRunIds = new Set();
 
 function assert(condition, message, statusCode = 400) {
   if (!condition) {
@@ -409,6 +410,41 @@ function buildClientState() {
     scenario_meta: game.scenario.mission_metadata,
     scenario_version: game.scenario_version,
     transition_remaining: game.transition_remaining,
+  };
+}
+
+function buildAdminGameRunSummary(source) {
+  return {
+    run_id: source.run_id,
+    room_code: source.room_code || source.room?.code || "unknown-room",
+    scenario_title:
+      source.scenario_title || source.scenario?.mission_metadata?.title || source.summary?.scenario_meta?.title || "Unknown Scenario",
+    phase: source.phase || source.game_metadata?.phase || "unknown",
+    mission:
+      source.final_rating || source.game_metadata?.final_rating || (source.phase || source.game_metadata?.phase || "unknown"),
+    mission_score: source.mission_score ?? source.game_metadata?.mission_score ?? 0,
+    started_at:
+      source.started_at ||
+      source.summary?.started_at ||
+      null,
+    finished_at: source.finished_at || null,
+    updated_at: source.updated_at || null,
+  };
+}
+
+function buildAdminGameRunDetail(source) {
+  return {
+    ...buildAdminGameRunSummary(source),
+    current_turn: source.current_turn ?? source.game_metadata?.current_turn ?? 1,
+    stress_level: source.stress_level ?? source.game_metadata?.stress_level ?? 0,
+    tide_window_minutes: source.tide_window_minutes ?? source.game_metadata?.tide_window_minutes ?? 0,
+    systems: source.systems || {},
+    summary: source.summary || {
+      room: game.room,
+      game_metadata: game.game_metadata,
+      turn_data: game.turn_data,
+    },
+    turn_history: source.turn_history || [],
   };
 }
 
@@ -725,6 +761,69 @@ app.get("/api/v1/scenario", (req, res) => {
   res.json(publicScenario());
 });
 
+app.get("/api/v1/admin/game_runs", async (req, res, next) => {
+  try {
+    requireRole(req, "admin");
+    const storedRuns = await persistence.listGameRuns();
+    const runs = storedRuns
+      .map((entry) => buildAdminGameRunSummary(entry))
+      .filter((entry) => !hiddenDeletedRunIds.has(entry.run_id));
+    const currentRun = buildAdminGameRunSummary(game);
+    const currentRunStarted = game.game_metadata.phase !== "waiting_room";
+    if (
+      currentRunStarted &&
+      !hiddenDeletedRunIds.has(currentRun.run_id) &&
+      !runs.some((entry) => entry.run_id === currentRun.run_id)
+    ) {
+      runs.unshift(currentRun);
+    }
+    res.json({ ok: true, runs });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/api/v1/admin/game_runs/:runId", async (req, res, next) => {
+  try {
+    requireRole(req, "admin");
+    const runId = normalizeString(req.params?.runId, 128);
+    assert(runId, "runId is required.");
+    assert(!hiddenDeletedRunIds.has(runId), "Game run not found.", 404);
+
+    if (runId === game.run_id) {
+      return res.json({ ok: true, run: buildAdminGameRunDetail(game) });
+    }
+
+    const storedRun = await persistence.loadGameRun(runId);
+    assert(storedRun, "Game run not found.", 404);
+    res.json({ ok: true, run: buildAdminGameRunDetail(storedRun) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.delete("/api/v1/admin/game_runs/:runId", async (req, res, next) => {
+  try {
+    const admin = requireRole(req, "admin");
+    const runId = normalizeString(req.params?.runId, 128);
+    assert(runId, "runId is required.");
+
+    if (runId === game.run_id) {
+      hiddenDeletedRunIds.add(runId);
+      audit("game_run.deleted", admin, safeIpFromRequest(req), { run_id: runId, source: "memory" });
+      return res.json({ ok: true, deleted: true });
+    }
+
+    const deleted = await persistence.deleteGameRun(runId);
+    assert(deleted, "Game run not found.", 404);
+    hiddenDeletedRunIds.add(runId);
+    audit("game_run.deleted", admin, safeIpFromRequest(req), { run_id: runId, source: "persistence" });
+    res.json({ ok: true, deleted: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.post("/api/v1/join", (req, res, next) => {
   try {
     const name = normalizeString(req.body?.name, MAX_NAME_LENGTH);
@@ -851,35 +950,18 @@ app.post("/api/v1/start_game_countdown", (req, res, next) => {
     ensureReadyToStart();
 
     stopCountdown();
-    game.room.startCountdownEndsAt = Date.now() + 10_000;
-    io.emit("GAME_START_COUNTDOWN", { remaining: 10 });
+    game.room.startCountdownEndsAt = null;
     audit("game.countdown_started", admin, safeIpFromRequest(req), {
       room_code: game.room.code,
       run_id: game.run_id,
     });
-    emitState();
-
-    let remaining = 10;
-    const tick = () => {
-      remaining -= 1;
-      if (remaining > 0) {
-        io.emit("GAME_START_COUNTDOWN", { remaining });
-        emitState();
-        countdownTimeout = setTimeout(tick, 1000);
-        return;
-      }
-
-      game.room.hasStarted = true;
-      game.room.startCountdownEndsAt = null;
-      game.game_metadata.phase = "briefing";
-      game.game_metadata.current_turn = 1;
-      game.game_metadata.is_paused = true;
-      game.turn_data.timer_remaining = getTurnDurationSeconds(1);
-      io.emit("GAME_START", buildClientState());
-      beginBriefing(1);
-    };
-
-    countdownTimeout = setTimeout(tick, 1000);
+    game.room.hasStarted = true;
+    game.game_metadata.phase = "briefing";
+    game.game_metadata.current_turn = 1;
+    game.game_metadata.is_paused = true;
+    game.turn_data.timer_remaining = getTurnDurationSeconds(1);
+    io.emit("GAME_START", buildClientState());
+    beginBriefing(1);
     res.json({ ok: true });
   } catch (error) {
     next(error);

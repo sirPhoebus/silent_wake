@@ -44,8 +44,8 @@
 </main>
 } @else {
 <main class="shell">
-  @if (!isAdmin()) {
   <div class="role-corner-badge">{{ roleLabels[player.role] || player.role }}</div>
+  @if (!isAdmin()) {
   <section class="hero">
     <div>
       <div class="turn-banner">{{ game.scenario_meta.title }} • {{ game.game_metadata.phase }}</div>
@@ -81,15 +81,8 @@
 
   @if (!isAdmin() && game.room.hasStarted && game.game_metadata.phase !== 'game_over') {
   <section class="panel compact stress-strip">
-    <div class="row-between">
-      <div>
-        <h3>Stress</h3>
-        <!-- <div class="muted">Cold to hot, capped at 10.</div> -->
-      </div>
-      <span class="pill">Level {{ game.game_metadata.stress_level }}/10</span>
-    </div>
     <div class="stress-scale">
-      <span class="stress-edge">Cold</span>
+      <span class="stress-edge">Calm</span>
       <div class="stress-bar-track">
         <div class="stress-bar-fill" [style.width.%]="game.game_metadata.stress_level * 10"></div>
         <div class="stress-bar-markers">
@@ -98,7 +91,7 @@
           }
         </div>
       </div>
-      <span class="stress-edge">Hot</span>
+      <span class="stress-edge">Stressed</span>
     </div>
   </section>
 
@@ -112,7 +105,7 @@
   </section>
   }
 
-  @if (!isAdmin() && game.game_metadata.phase === 'game_over') {
+  @if (game.game_metadata.phase === 'game_over') {
   <section class="grid two">
     <section class="panel">
       <h2>Mission Rating</h2>
@@ -150,6 +143,23 @@
         }
       </div>
     </section>
+    @if (isAdmin()) {
+    <section class="panel compact">
+      <h3>Admin Turn Results</h3>
+      <div class="history-list">
+        @for (entry of reversedHistory(); track entry.turn_index) {
+        <div class="history-item">
+          <div class="row-between">
+            <strong>Turn {{ entry.turn_index }}</strong>
+            <span class="pill">{{ entry.outcome }}</span>
+          </div>
+          <div class="muted">{{ turnHistoryPlayedCards(entry).length }} cards played</div>
+          <button class="secondary" type="button" (click)="openTurnHistoryDetail(entry)">Details</button>
+        </div>
+        }
+      </div>
+    </section>
+    } @else {
     <section class="panel compact">
       <h3>System Snapshot</h3>
       <div class="system-rail system-rail-static">
@@ -161,6 +171,7 @@
         }
       </div>
     </section>
+    }
   </section>
   <section class="panel compact">
     @if (isAdmin()) {
@@ -174,29 +185,27 @@
     </form>
     <div class="footer-note">Reset the room to return everyone to the waiting room and launch the next run.</div>
     } @else {
-    <div class="footer-note">Waiting for the Game Admin to reset the room for the next scenario.</div>
+    <div class="footer-note">Waiting for the Game Admin to prepare the next scenario.</div>
     }
-    <button class="secondary" (click)="clearSession()">Clear Local Session</button>
   </section>
   } @else if (!game.room.hasStarted || isAdmin()) {
+  <section class="hero">
+    <div>
+      <div class="turn-banner">Waiting Room</div>
+      <h1>Silent Wake</h1>
+      <p>Stage players, load a scenario, and prepare the next run.</p>
+    </div>
+  </section>
   <section class="grid two">
     <section class="panel">
       <h2>{{ isAdmin() ? 'Waiting Room' : (game.room.hasStarted ? 'Control Center' : 'Waiting Room') }}</h2>
       <p>
-        {{ isAdmin() ? 'Players are staged here until the admin starts the 10 second countdown.' : (game.room.hasStarted ? 'Active Mission: ' + game.scenario_meta.title : 'Players are staged here until the admin starts the 10 second countdown.') }}
+        {{ isAdmin() ? 'Players are staged here until the admin starts the briefing.' : (game.room.hasStarted ? 'Active Mission: ' + game.scenario_meta.title : 'Players are staged here until the admin starts the briefing.') }}
       </p>
-      @if (isAdmin() && game.room.hasStarted) {
-        <div class="stat-grid" style="margin: 20px 0;">
-          <div class="stat"><small>Phase</small><strong>{{ game.game_metadata.phase }}</strong></div>
-          <div class="stat"><small>Turn</small><strong>{{ game.game_metadata.current_turn }}/{{ totalTurns() }}</strong></div>
-          <div class="stat"><small>Timer</small><strong>{{ fmtSeconds(game.turn_data.timer_remaining) }}</strong></div>
-          <div class="stat"><small>Score</small><strong>{{ game.game_metadata.mission_score }}</strong></div>
-        </div>
-      }
       @if (isAdmin()) {
       <div class="toolbar">
         <button class="secondary" (click)="resetRoom()">Reset Room</button>
-        <button [disabled]="!canStartCountdown()" (click)="startCountdown()">Start Countdown</button>
+        <button [disabled]="!canStartCountdown()" (click)="startCountdown()">Start</button>
         <button class="secondary" (click)="refresh()">Refresh State</button>
       </div>
       <form class="toolbar" style="margin-top: 2rem;" (ngSubmit)="uploadScenario()">
@@ -216,15 +225,6 @@
       }
       } @else {
       <p class="muted">Waiting for Game Admin to initiate launch.</p>
-      }
-      @if (game.room.startCountdownEndsAt) {
-      <div class="countdown-timer-circle">
-        <svg viewBox="0 0 36 36">
-          <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-          <path class="circle" [attr.stroke-dasharray]="(countdownRemaining() * 10) + ', 100'"
-            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-        </svg>
-      </div>
       }
     </section>
     <section class="panel">
@@ -362,6 +362,47 @@
     </section>
   </section>
   }
+
+  @if (isAdmin()) {
+  <section class="panel admin-game-runs-panel">
+    <div class="row-between">
+      <h3>All Games</h3>
+      <span class="muted">{{ adminGameRuns.length }} runs</span>
+    </div>
+    <div class="admin-game-runs-table-wrap">
+      <table class="admin-game-runs-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Time Played</th>
+            <th>Mission</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (adminGameRuns.length === 0) {
+          <tr>
+            <td colspan="5" class="muted">No game runs available yet.</td>
+          </tr>
+          }
+          @for (run of adminGameRuns; track run.run_id) {
+          <tr>
+            <td>{{ run.run_id.slice(0, 8) }}</td>
+            <td>{{ fmtDate(run.finished_at || run.updated_at || run.started_at) }}</td>
+            <td>{{ fmtTime(run.finished_at || run.updated_at || run.started_at) }}</td>
+            <td>{{ run.mission }}</td>
+            <td class="admin-game-runs-actions">
+              <button class="secondary" type="button" (click)="openAdminGameRun(run.run_id)">Details</button>
+              <button class="secondary" type="button" (click)="deleteAdminGameRun(run.run_id)">Delete</button>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+  }
 </main>
 
 @if (player) {
@@ -392,6 +433,75 @@
   </form>
   }
 </aside>
+}
+
+@if (selectedTurnHistoryEntry) {
+<div class="overlay" (click)="closeTurnHistoryDetail()">
+  <div class="modal-card admin-turn-detail-modal" (click)="$event.stopPropagation()">
+    <div class="turn-banner">Turn {{ selectedTurnHistoryEntry.turn_index }} · {{ selectedTurnHistoryEntry.outcome }}</div>
+    <h3>Turn Detail</h3>
+    <div class="history-detail-grid">
+      <section class="panel compact">
+        <h4>Played Cards</h4>
+        <div class="history-list">
+          @for (played of turnHistoryPlayedCards(selectedTurnHistoryEntry); track played.playerName + '-' + played.cardName) {
+          <div class="history-item">
+            <strong>{{ played.playerName }}</strong>
+            <div class="muted">{{ played.role }}</div>
+            <div>{{ played.cardName }}</div>
+          </div>
+          }
+        </div>
+      </section>
+      <section class="panel compact">
+        <h4>Resolution</h4>
+        <div class="history-item">
+          <strong>Matched</strong>
+          <div class="muted">{{ csv(selectedTurnHistoryEntry.matched) }}</div>
+        </div>
+        <div class="history-item">
+          <strong>Missed</strong>
+          <div class="muted">{{ csv(selectedTurnHistoryEntry.missed) }}</div>
+        </div>
+        <div class="history-item">
+          <strong>Bad</strong>
+          <div class="muted">{{ csv(selectedTurnHistoryEntry.bad_cards) }}</div>
+        </div>
+      </section>
+    </div>
+    <div class="toolbar">
+      <button type="button" (click)="closeTurnHistoryDetail()">Close</button>
+    </div>
+  </div>
+</div>
+}
+
+@if (selectedAdminGameRun) {
+<div class="overlay" (click)="closeAdminGameRun()">
+  <div class="modal-card admin-turn-detail-modal admin-game-detail-modal" (click)="$event.stopPropagation()">
+    <div class="turn-banner">{{ selectedAdminGameRun.scenario_title }}</div>
+    <h3>Game Detail</h3>
+    <section class="panel compact">
+      <h4>Turns</h4>
+      <div class="history-list admin-game-detail-history">
+        @for (entry of adminRunTurnHistory(selectedAdminGameRun); track entry.turn_index) {
+        <div class="history-item">
+          <div class="row-between">
+            <strong>Turn {{ entry.turn_index }}</strong>
+            <span class="pill">{{ entry.outcome }}</span>
+          </div>
+          <div class="muted">Matched: {{ csv(entry.matched) }}</div>
+          <div class="muted">Missed: {{ csv(entry.missed) }}</div>
+          <div class="muted">Bad: {{ csv(entry.bad_cards) }}</div>
+        </div>
+        }
+      </div>
+    </section>
+    <div class="toolbar">
+      <button type="button" (click)="closeAdminGameRun()">Close</button>
+    </div>
+  </div>
+</div>
 }
 
 @if (showBriefingOverlay() && currentTurn()) {
