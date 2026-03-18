@@ -16,7 +16,6 @@ const MAX_CHAT_HISTORY = 200;
 const MAX_CHAT_MESSAGE_LENGTH = 400;
 const MAX_NAME_LENGTH = 40;
 const MAX_ROOM_CODE_LENGTH = 40;
-const MAX_ACTIVE_CARDS_PER_PLAYER = 3;
 const SYSTEM_KEYS = [
   "NAV_RADAR",
   "NAV_CONSOLE",
@@ -1047,8 +1046,6 @@ io.on("connection", (socket) => {
         }
         return;
       }
-      assert(playerActiveCards.length < MAX_ACTIVE_CARDS_PER_PLAYER, `You can arm up to ${MAX_ACTIVE_CARDS_PER_PLAYER} cards.`, 400);
-
       const active = {
         player_id: actingPlayer.id,
         player_name: actingPlayer.name,

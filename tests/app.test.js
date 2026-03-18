@@ -1,6 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const { spawn } = require("node:child_process");
+const fs = require("node:fs");
 const path = require("node:path");
 
 const { io } = require("socket.io-client");
@@ -63,6 +64,10 @@ function connectSocket(token) {
     forceNew: true,
     reconnection: false,
   });
+}
+
+function loadScenarioFixture(filename) {
+  return JSON.parse(fs.readFileSync(path.join(repoDir, filename), "utf8"));
 }
 
 function once(socket, eventName, timeoutMs = 10_000) {
@@ -253,7 +258,7 @@ test("synchronized turn flow works over http and websocket", async () => {
   });
 });
 
-test("officers can arm up to three cards and remove one specific card", async () => {
+test("officers can arm all available cards and remove one specific card", async () => {
   const adminJoin = await api("/api/v1/join", {
     method: "POST",
     body: { name: "Admin", role: "admin" },
@@ -265,10 +270,17 @@ test("officers can arm up to three cards and remove one specific card", async ()
     body: { room_code: "triple-cards" },
   });
 
+  const expandedScenario = loadScenarioFixture("scenario_1.json");
+  expandedScenario.turns[0].cards.cyber_officer.push({
+    id: "C_EXTRA",
+    name: "Reserve Packet Scrub",
+    desc: "Inject an extra cyber option for overflow board testing.",
+  });
+
   await api("/api/v1/load_scenario", {
     method: "POST",
     headers: authHeaders(adminJoin.session_token),
-    body: { path: "./scenario_1.json" },
+    body: { scenario: expandedScenario },
   });
 
   const coJoin = await api("/api/v1/join", {
@@ -322,6 +334,7 @@ test("officers can arm up to three cards and remove one specific card", async ()
   await emitAck(cyberSocket, "PLAY_CARD", { cardId: "C1" });
   await emitAck(cyberSocket, "PLAY_CARD", { cardId: "C2" });
   await emitAck(cyberSocket, "PLAY_CARD", { cardId: "C3" });
+  await emitAck(cyberSocket, "PLAY_CARD", { cardId: "C_EXTRA" });
 
   let state = await api("/api/v1/state");
   assert.deepEqual(
@@ -329,7 +342,7 @@ test("officers can arm up to three cards and remove one specific card", async ()
       .filter((entry) => entry.role === "cyber_officer")
       .map((entry) => entry.card_id)
       .sort(),
-    ["C1", "C2", "C3"],
+    ["C1", "C2", "C3", "C_EXTRA"],
   );
 
   await emitAck(cyberSocket, "REMOVE_CARD", { cardId: "C2" });
@@ -339,7 +352,7 @@ test("officers can arm up to three cards and remove one specific card", async ()
       .filter((entry) => entry.role === "cyber_officer")
       .map((entry) => entry.card_id)
       .sort(),
-    ["C1", "C3"],
+    ["C1", "C3", "C_EXTRA"],
   );
 
   cyberSocket.close();

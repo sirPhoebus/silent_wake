@@ -526,28 +526,16 @@ export class AppComponent implements OnInit, OnDestroy {
       .filter((entry): entry is Card => Boolean(entry));
   }
 
-  protected slotCard(slot: number): Card | null {
-    return this.activeSelectionCards()[slot] || null;
-  }
-
   protected hasActiveCard(cardId: string): boolean {
     return this.activeSelections().some((entry) => entry.card_id === cardId);
   }
 
-  protected cardSlots(): number[] {
-    return [0, 1, 2];
-  }
-
-  protected nextAvailableSlotIndex(): number {
-    return this.activeSelections().length;
-  }
-
   protected canPlayCard(cardId: string): boolean {
-    return this.canInteract() && !this.hasActiveCard(cardId) && this.activeSelections().length < 3;
+    return this.canInteract() && !this.hasActiveCard(cardId);
   }
 
-  protected canDropIntoSlot(slot: number): boolean {
-    return this.canInteract() && Boolean(this.draggedHandCardId) && slot === this.nextAvailableSlotIndex();
+  protected canDropIntoPlayField(): boolean {
+    return this.canInteract() && Boolean(this.draggedHandCardId);
   }
 
   protected canDropIntoHand(): boolean {
@@ -565,7 +553,40 @@ export class AppComponent implements OnInit, OnDestroy {
   protected activeCardsForCo() {
     return (this.game?.turn_data.active_cards || [])
       .map((entry) => ({ ...entry, card: this.resolveCardById(entry.card_id) }))
-      .sort((a, b) => a.role.localeCompare(b.role));
+      .sort((a, b) => a.played_at - b.played_at);
+  }
+
+  protected activeCardGroupsForCo(): Array<{
+    playerId: number;
+    playerName: string;
+    role: string;
+    cards: Array<ReturnType<AppComponent["activeCardsForCo"]>[number]>;
+  }> {
+    const groups = new Map<
+      number,
+      {
+        playerId: number;
+        playerName: string;
+        role: string;
+        cards: Array<ReturnType<AppComponent["activeCardsForCo"]>[number]>;
+      }
+    >();
+
+    for (const entry of this.activeCardsForCo()) {
+      const existing = groups.get(entry.player_id);
+      if (existing) {
+        existing.cards.push(entry);
+        continue;
+      }
+      groups.set(entry.player_id, {
+        playerId: entry.player_id,
+        playerName: entry.player_name,
+        role: entry.role,
+        cards: [entry],
+      });
+    }
+
+    return [...groups.values()].sort((a, b) => a.role.localeCompare(b.role) || a.playerName.localeCompare(b.playerName));
   }
 
   protected playerStatistics() {
@@ -755,14 +776,14 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 
-  protected async playCard(cardId: string, targetSlotIndex = this.nextAvailableSlotIndex()): Promise<void> {
+  protected async playCard(cardId: string, targetSelector = "[data-play-field='officer']"): Promise<void> {
     await this.run(async () => {
       const snapshot = this.createCardSnapshot(`[data-hand-card-id="${cardId}"]`);
       this.launchingCardIds.add(cardId);
       this.renderNow();
       try {
         await this.emitSocket("PLAY_CARD", { cardId });
-        await this.animateSnapshotTo(snapshot, `[data-slot-index="${targetSlotIndex}"]`);
+        await this.animateSnapshotTo(snapshot, targetSelector);
       } catch (error) {
         this.launchingCardIds.delete(cardId);
         this.renderNow();
@@ -809,8 +830,8 @@ export class AppComponent implements OnInit, OnDestroy {
     this.renderNow();
   }
 
-  protected onSlotDragOver(event: DragEvent, slot: number): void {
-    if (!this.canDropIntoSlot(slot)) {
+  protected onPlayFieldDragOver(event: DragEvent): void {
+    if (!this.canDropIntoPlayField()) {
       return;
     }
     event.preventDefault();
@@ -819,14 +840,14 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  protected async onSlotDrop(event: DragEvent, slot: number): Promise<void> {
-    if (!this.draggedHandCardId || !this.canDropIntoSlot(slot)) {
+  protected async onPlayFieldDrop(event: DragEvent): Promise<void> {
+    if (!this.draggedHandCardId || !this.canDropIntoPlayField()) {
       return;
     }
     event.preventDefault();
     const cardId = this.draggedHandCardId;
     this.draggedHandCardId = null;
-    await this.playCard(cardId, slot);
+    await this.playCard(cardId);
   }
 
   protected onHandDropZoneOver(event: DragEvent): void {

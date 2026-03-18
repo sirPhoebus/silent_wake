@@ -259,29 +259,45 @@
   <section class="grid">
     <section class="panel">
       <h3>Played Cards</h3>
-      <div class="selection-list">
+      <div class="co-play-field">
         @if (game.turn_data.active_cards.length === 0) {
-        <div class="muted">No officers have played a card yet.</div>
+        <div class="play-field-empty">
+          <strong>No officers have played a card yet.</strong>
+          <div class="muted">Incoming cards will appear here grouped by player.</div>
+        </div>
         }
-        @for (entry of activeCardsForCo(); track entry.card_id + '-' + entry.player_id) {
-        <article class="card game-card co-commit-card" [class.co-commit-card-selected]="isCommittedCard(entry.card_id)">
-          <div class="card-shine"></div>
-          <div class="card-topline">
-            <div class="role-label">{{ roleLabels[entry.role] || entry.role }}</div>
-            <div class="pill">{{ entry.player_name }}</div>
-          </div>
-          <div class="card-title-block">
-            <h4>{{ entry.card?.name || entry.card_id }}</h4>
-          </div>
-          <p>{{ entry.card?.desc || 'No card description available.' }}</p>
-          <div class="card-actions">
-            <div class="card-button-row">
-              <button [class.secondary]="isCommittedCard(entry.card_id)" (click)="toggleCommitCard(entry.card_id)">
-                {{ isCommittedCard(entry.card_id) ? 'Committed' : 'Commit Card' }}
-              </button>
+        @for (group of activeCardGroupsForCo(); track group.playerId) {
+        <section class="co-player-lane" [attr.data-role]="group.role">
+          <div class="co-player-lane-header">
+            <div>
+              <div class="role-label">{{ roleLabels[group.role] || group.role }}</div>
+              <h4>{{ group.playerName }}</h4>
             </div>
+            <span class="pill">{{ group.cards.length }} played</span>
           </div>
-        </article>
+          <div class="co-player-card-cloud">
+            @for (entry of group.cards; track entry.card_id + '-' + entry.player_id) {
+            <article class="card game-card co-commit-card" [class.co-commit-card-selected]="isCommittedCard(entry.card_id)">
+              <div class="card-shine"></div>
+              <div class="card-topline">
+                <div class="role-label">{{ roleLabels[entry.role] || entry.role }}</div>
+                <div class="pill">{{ entry.player_name }}</div>
+              </div>
+              <div class="card-title-block">
+                <h4>{{ entry.card?.name || entry.card_id }}</h4>
+              </div>
+              <p>{{ entry.card?.desc || 'No card description available.' }}</p>
+              <div class="card-actions">
+                <div class="card-button-row">
+                  <button [class.secondary]="isCommittedCard(entry.card_id)" (click)="toggleCommitCard(entry.card_id)">
+                    {{ isCommittedCard(entry.card_id) ? 'Committed' : 'Commit Card' }}
+                  </button>
+                </div>
+              </div>
+            </article>
+            }
+          </div>
+        </section>
         }
       </div>
     </section>
@@ -293,49 +309,46 @@
       <p>{{ currentTurn()?.context || 'Awaiting mission data.' }}</p>
       <div class="armed-board">
         <div class="row-between">
-          <strong>Armed Cards</strong>
-          <span class="pill">{{ activeSelections().length }}/3 selected</span>
+          <strong>Play Field</strong>
+          <span class="pill">{{ activeSelections().length }} cards in play</span>
         </div>
-        <div class="armed-slots">
-          @for (slot of cardSlots(); track slot) {
-          <div class="armed-slot" [class.armed-slot-filled]="slotCard(slot)"
-            [class.armed-slot-drop-target]="canDropIntoSlot(slot)" [attr.data-slot-index]="slot"
-            (dragover)="onSlotDragOver($event, slot)" (drop)="onSlotDrop($event, slot)">
-            @if (slotCard(slot); as armedCard) {
-            <div class="armed-slot-visual armed-slot-visual-filled">
-              <article class="slot-card-object" draggable="true" [attr.data-card-id]="armedCard.id"
-                [attr.data-slot-card-id]="armedCard.id" (dragstart)="onSlotCardDragStart($event, armedCard.id)"
-                (dragend)="onCardDragEnd()">
-                <button class="slot-card-remove" type="button" (click)="removeCard(armedCard.id)"
-                  aria-label="Remove card from slot">×</button>
-                <div class="slot-card-sheen"></div>
-                <div class="role-label">{{ roleLabels[player.role] }}</div>
-                <strong>{{ armedCard.name }}</strong>
-              </article>
-            </div>
-            } @else {
-            <div class="armed-slot-visual" aria-hidden="true"></div>
-            }
+        <div class="play-field" [class.play-field-drop-target]="canDropIntoPlayField()" data-play-field="officer"
+          (dragover)="onPlayFieldDragOver($event)" (drop)="onPlayFieldDrop($event)">
+          @if (activeSelectionCards().length === 0) {
+          <div class="play-field-empty">
+            <strong>Drop cards into the field</strong>
+            <div class="muted">No placeholders, no slot cap. Played cards will stack here while the timer is active.</div>
           </div>
           }
+          @for (armedCard of activeSelectionCards(); track armedCard.id) {
+          <article class="played-card-object" draggable="true" [attr.data-card-id]="armedCard.id"
+            [attr.data-slot-card-id]="armedCard.id" (dragstart)="onSlotCardDragStart($event, armedCard.id)"
+            (dragend)="onCardDragEnd()">
+            <button class="slot-card-remove" type="button" (click)="removeCard(armedCard.id)"
+              aria-label="Remove card from play field">×</button>
+            <div class="slot-card-sheen"></div>
+            <div class="role-label">{{ roleLabels[player.role] }}</div>
+            <strong>{{ armedCard.name }}</strong>
+            <div class="muted">{{ armedCard.desc }}</div>
+          </article>
+          }
         </div>
-        <div class="footer-note">Players can arm one, two, or three cards and still hot-swap while the timer is active.
-        </div>
+        <div class="footer-note">Scenario resolution still decides which card combinations matter when the Chief Officer commits.</div>
       </div>
     </section>
     <section class="panel hand-panel">
       <div class="row-between hand-panel-header">
         <div>
           <h3>Your Card Hand</h3>
-          <div class="muted">Choose the one, two, or three cards you want to send upward.</div>
+          <div class="muted">Send any number of cards upward, then drag them back here to remove them.</div>
         </div>
       </div>
       <div class="cards card-hand" data-hand-dropzone="true" [class.hand-drop-target]="canDropIntoHand()"
         (dragover)="onHandDropZoneOver($event)" (drop)="onHandDrop($event)">
         @if (availablePlayerCards().length === 0) {
         <div class="empty-hand-dropzone">
-          <strong>Hand is full deployed</strong>
-          <div class="muted">Drag a slotted card back here or use the remove icon.</div>
+          <strong>All hand cards are in play</strong>
+          <div class="muted">Drag a played card back here or use the remove icon.</div>
         </div>
         }
         @for (card of availablePlayerCards(); track card.id) {
@@ -352,8 +365,7 @@
           <p>{{ card.desc }}</p>
           <div class="card-actions">
             <div class="card-button-row">
-              <button [disabled]="!canPlayCard(card.id)"
-                (click)="playCard(card.id, nextAvailableSlotIndex())">Play</button>
+              <button [disabled]="!canPlayCard(card.id)" (click)="playCard(card.id)">Play</button>
             </div>
           </div>
         </article>
